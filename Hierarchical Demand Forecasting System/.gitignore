@@ -1,0 +1,75 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# uv
+.uv/
+
+# Testing & coverage
+.pytest_cache/
+.coverage
+htmlcov/
+coverage.xml
+
+# Type checking
+.mypy_cache/
+
+# Ruff
+.ruff_cache/
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# Data (no subir datos crudos ni procesados)
+data/
+*.csv
+*.parquet
+*.feather
+*.pkl
+*.pickle
+
+# Modelos entrenados
+models/
+*.bin
+*.pt
+*.pth
+*.onnx
+
+# MLflow
+mlflow.db
+mlruns/
+
+# Reports generados
+reports/figures/
+*.png
+*.jpg
+*.svg
+
+# Secrets y credenciales
+.env
+.env.*
+kaggle.json
+*.key
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDEs
+.idea/
+.vscode/
+*.swp
+*.swo
