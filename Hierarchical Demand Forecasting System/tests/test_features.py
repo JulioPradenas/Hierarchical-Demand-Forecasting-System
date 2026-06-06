@@ -1,6 +1,8 @@
+import numpy as np
 import pandas as pd
 import pytest
 from demand_forecast.features.base import FeatureBuilder
+from demand_forecast.features.calendar import CalendarFeatureBuilder
 from demand_forecast.features.temporal import TemporalFeatureBuilder
 
 
@@ -72,3 +74,28 @@ def test_fourier_terms_shape(synthetic_sales: pd.DataFrame) -> None:
     # 2 periods × 2 orders × 2 (sin+cos) = 8 Fourier columns
     fourier_cols = [c for c in features.columns if "fourier" in c]
     assert len(fourier_cols) == 8
+
+
+def test_calendar_features_continuous_encoding(
+    synthetic_calendar: pd.DataFrame,
+) -> None:
+    """Event features must be continuous distances, not binary flags."""
+    builder = CalendarFeatureBuilder()
+    features = builder.fit_transform(synthetic_calendar)
+    event_cols = [c for c in features.columns if "days_until" in c or "days_since" in c]
+    assert len(event_cols) > 0, "No distance-encoded event features found"
+    for col in event_cols:
+        assert features[col].dtype in [np.float64, np.float32, float]
+
+
+def test_snap_columns_present(synthetic_calendar: pd.DataFrame) -> None:
+    builder = CalendarFeatureBuilder()
+    features = builder.fit_transform(synthetic_calendar)
+    assert "snap_CA" in features.columns
+    assert "snap_TX" in features.columns
+
+
+def test_calendar_has_no_nan_on_date(synthetic_calendar: pd.DataFrame) -> None:
+    builder = CalendarFeatureBuilder()
+    features = builder.fit_transform(synthetic_calendar)
+    assert features["date"].isna().sum() == 0
