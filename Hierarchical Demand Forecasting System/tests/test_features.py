@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
+from demand_forecast.data.sql_features import DuckDBFeatureRunner
 from demand_forecast.features.base import FeatureBuilder
 from demand_forecast.features.calendar import CalendarFeatureBuilder
 from demand_forecast.features.hierarchical import HierarchicalFeatureBuilder
@@ -132,3 +133,34 @@ def test_parent_lag_column_exists(synthetic_sales: pd.DataFrame) -> None:
     builder = HierarchicalFeatureBuilder(parent_lag=28)
     features = builder.fit_transform(synthetic_sales)
     assert "store_sales_lag28" in features.columns
+
+
+def test_sql_lag_features_match_python(synthetic_sales: pd.DataFrame) -> None:
+    """DuckDB SQL lag_28 must match TemporalFeatureBuilder lag_28."""
+    runner = DuckDBFeatureRunner()
+    sql_result = (
+        runner.lag_features(synthetic_sales[["item_id", "store_id", "date", "sales"]])
+        .sort_values(["item_id", "store_id", "date"])
+        .reset_index(drop=True)
+    )
+
+    builder = TemporalFeatureBuilder(horizon=28, lags=[28], rolling_windows=[])
+    py_result = (
+        builder.fit_transform(synthetic_sales[["item_id", "store_id", "date", "sales"]])
+        .sort_values(["item_id", "store_id", "date"])
+        .reset_index(drop=True)
+    )
+
+    merged = (
+        sql_result[["item_id", "store_id", "date", "lag_28"]]
+        .merge(
+            py_result[["item_id", "store_id", "date", "lag_28"]],
+            on=["item_id", "store_id", "date"],
+            suffixes=("_sql", "_py"),
+        )
+        .dropna()
+    )
+
+    np.testing.assert_allclose(
+        merged["lag_28_sql"].values, merged["lag_28_py"].values, rtol=1e-5
+    )
