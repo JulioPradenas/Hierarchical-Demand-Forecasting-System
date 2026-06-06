@@ -1,8 +1,10 @@
 import numpy as np
 import pandas as pd
 import pytest
+
 from demand_forecast.features.base import FeatureBuilder
 from demand_forecast.features.calendar import CalendarFeatureBuilder
+from demand_forecast.features.hierarchical import HierarchicalFeatureBuilder
 from demand_forecast.features.temporal import TemporalFeatureBuilder
 
 
@@ -99,3 +101,34 @@ def test_calendar_has_no_nan_on_date(synthetic_calendar: pd.DataFrame) -> None:
     builder = CalendarFeatureBuilder()
     features = builder.fit_transform(synthetic_calendar)
     assert features["date"].isna().sum() == 0
+
+
+def test_item_share_in_zero_one(synthetic_sales: pd.DataFrame) -> None:
+    builder = HierarchicalFeatureBuilder()
+    features = builder.fit_transform(synthetic_sales)
+    assert (features["item_share"] >= 0).all()
+    assert (features["item_share"] <= 1).all()
+
+
+def test_item_share_sums_to_one_per_cat_store_date(
+    synthetic_sales: pd.DataFrame,
+) -> None:
+    builder = HierarchicalFeatureBuilder()
+    features = builder.fit_transform(synthetic_sales)
+    # After warm-up (drop rows where item_share == uniform fill), check sums
+    # Use only rows where we have enough history for lagged shares
+    warm_up = 28
+    late = features[
+        features.groupby(["item_id", "store_id"])["date"].transform(
+            lambda x: x.rank() > warm_up
+        )
+    ]
+    if not late.empty:
+        share_sums = late.groupby(["cat_id", "store_id", "date"])["item_share"].sum()
+        np.testing.assert_allclose(share_sums.values, 1.0, atol=1e-6)
+
+
+def test_parent_lag_column_exists(synthetic_sales: pd.DataFrame) -> None:
+    builder = HierarchicalFeatureBuilder(parent_lag=28)
+    features = builder.fit_transform(synthetic_sales)
+    assert "store_sales_lag28" in features.columns
