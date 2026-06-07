@@ -1,6 +1,6 @@
 # Hierarchical Demand Forecasting System
 
-![CI/CD](https://img.shields.io/badge/CI%2FCD-Passing-brightgreen)
+[![CI](https://github.com/JulioPradenas/Hierarchical-Demand-Forecasting-System/actions/workflows/ci.yml/badge.svg)](https://github.com/JulioPradenas/Hierarchical-Demand-Forecasting-System/actions/workflows/ci.yml)
 ![Coverage](https://img.shields.io/badge/Coverage-87%25-blue)
 ![Python](https://img.shields.io/badge/Python-3.11-blue)
 ![Phases](https://img.shields.io/badge/Phases-10%2F10-green)
