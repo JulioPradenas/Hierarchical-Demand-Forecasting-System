@@ -42,7 +42,7 @@ data/
 *.pickle
 
 # Modelos entrenados
-models/
+/models/
 *.bin
 *.pt
 *.pth
