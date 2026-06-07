@@ -34,7 +34,11 @@ coverage.xml
 *.ipynb_checkpoints
 
 # Data (no subir datos crudos ni procesados)
-data/
+data/*.csv
+data/*.parquet
+data/*.zip
+data/raw/
+data/processed/
 *.csv
 *.parquet
 *.feather
