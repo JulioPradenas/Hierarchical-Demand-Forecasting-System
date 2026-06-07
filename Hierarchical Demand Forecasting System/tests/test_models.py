@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
+from demand_forecast.evaluation.baseline import evaluate_baselines
 from demand_forecast.models.base import BaseForecaster
 from demand_forecast.models.naive import SeasonalNaiveForecaster
 from demand_forecast.models.statistical import AutoARIMAForecaster, ETSForecaster
@@ -88,3 +89,21 @@ def test_autoarima_output_shape() -> None:
     result = model.fit(df).predict(horizon=7)
     assert set(result.columns) >= {"unique_id", "ds", "y_pred"}
     assert len(result) == 2 * 7
+
+
+def test_evaluate_baselines_returns_dataframe(synthetic_sales: pd.DataFrame) -> None:
+    """evaluate_baselines() must return a DataFrame with model and mase columns."""
+    from demand_forecast.evaluation.cv import TimeSeriesCV
+
+    df = (
+        synthetic_sales.groupby(["item_id", "store_id", "date"])["sales"]
+        .sum()
+        .reset_index()
+        .assign(unique_id=lambda x: x["item_id"] + "_" + x["store_id"])
+        .rename(columns={"date": "ds", "sales": "y"})[["unique_id", "ds", "y"]]
+    )
+    cv = TimeSeriesCV(n_splits=2, horizon=7)
+    results = evaluate_baselines(df, cv, horizon=7)
+    assert "model" in results.columns
+    assert "mase" in results.columns
+    assert set(results["model"]) >= {"SeasonalNaive"}
