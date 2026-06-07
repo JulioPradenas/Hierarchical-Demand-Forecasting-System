@@ -5,5 +5,10 @@ HierarchyLevel = Literal[
 ]
 
 HIERARCHY_LEVELS: list[HierarchyLevel] = [
-    "total", "state", "store", "category", "department", "item_store"
+    "total",
+    "state",
+    "store",
+    "category",
+    "department",
+    "item_store",
 ]

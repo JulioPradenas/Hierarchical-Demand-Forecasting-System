@@ -50,7 +50,7 @@ def synthetic_calendar() -> pd.DataFrame:
     df = pd.DataFrame(
         {
             "date": dates,
-            "d": [f"d_{i+1}" for i in range(len(dates))],
+            "d": [f"d_{i + 1}" for i in range(len(dates))],
             "wm_yr_wk": (
                 dates.isocalendar().year * 100 + dates.isocalendar().week
             ).values,

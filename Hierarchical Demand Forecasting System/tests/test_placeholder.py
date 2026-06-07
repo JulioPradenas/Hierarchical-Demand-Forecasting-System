@@ -11,6 +11,7 @@ def test_settings_defaults() -> None:
 
 def test_settings_env_override(monkeypatch: object) -> None:
     import os
+
     os.environ["DEMAND_HORIZON"] = "14"
     s = Settings()
     assert s.horizon == 14
