@@ -125,7 +125,7 @@ class QuantileGBDTForecaster:
     def __init__(
         self,
         quantile_levels: list[float] | None = None,
-        base_params: dict | None = None,
+        base_params: dict[str, object] | None = None,
     ) -> None:
         """Initialize quantile forecaster.
 
@@ -143,7 +143,7 @@ class QuantileGBDTForecaster:
             0.95,
         ]
         self.base_params = base_params or {}
-        self._models: dict[float, object] = {}  # quantile -> trained model
+        self._models: dict[float, object] = {}
 
     def fit(
         self,

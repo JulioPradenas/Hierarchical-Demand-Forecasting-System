@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import cast
+
 import numpy as np
 import pandas as pd
 
@@ -57,7 +59,7 @@ class MinTReconciler:
         # Estimate W (error covariance matrix) — unused in current formulation,
         # kept for future extension. For now, MinT reduces to bottom-up.
         n_base = len(self._base_series_order)
-        _w_mat = self._estimate_w(n_base, residuals_base)  # noqa: F841
+        _w_mat = self._estimate_w(n_base, residuals_base)  # noqa: F841 # type: ignore[assignment]
 
         # For now: MinT with all methods (ols, wls, etc.) reduces to bottom-up
         # This is correct for W=I (ols method) but simplified for others.
@@ -126,7 +128,7 @@ class MinTReconciler:
             )
             n = min(len(uid_residuals), 500)
             if n > 0:
-                residual_mat[i, :n] = uid_residuals[:n]
+                residual_mat[i, :n] = uid_residuals[:n]  # type: ignore[assignment]
                 counts[i] = n
 
         # Compute covariance, handling different series lengths
@@ -159,7 +161,7 @@ class MinTReconciler:
             raise RuntimeError("Call fit() first.")
 
         # Current: MinT reduces to bottom-up. Correct for method='ols' (W=I).
-        return self._s_mat @ base_forecasts_base
+        return cast(np.ndarray, self._s_mat @ base_forecasts_base)
 
     def coherence_error(  # pragma: no cover
         self, base_forecasts: dict[str, np.ndarray]

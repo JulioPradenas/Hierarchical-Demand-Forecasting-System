@@ -210,7 +210,10 @@ class LGBMGlobalForecaster:
                         feat_row[col] = history_y[lookup]
 
                 pred = float(
-                    np.maximum(0.0, self._model.predict(feat_row.values.reshape(1, -1)))
+                    np.maximum(
+                        0.0,
+                        self._model.predict(feat_row.values.reshape(1, -1)),  # type: ignore[union-attr]
+                    )
                 )
                 uid_preds[pd.Timestamp(row["ds"])] = pred
 

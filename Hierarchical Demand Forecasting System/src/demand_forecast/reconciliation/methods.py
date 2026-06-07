@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import cast
+
 import numpy as np
 
 from ..data.hierarchy import ForecastHierarchy
@@ -35,7 +37,7 @@ class BottomUpReconciler:
         """
         if self._s_mat is None:
             raise RuntimeError("Call fit() first.")
-        return self._s_mat @ base_forecasts_base
+        return cast(np.ndarray, self._s_mat @ base_forecasts_base)
 
 
 class TopDownReconciler:
@@ -112,7 +114,7 @@ class TopDownReconciler:
 
         # Disaggregate: distribute total using proportions
         reconciled_base = proportions * total_forecast
-        return self._s_mat @ reconciled_base
+        return cast(np.ndarray, self._s_mat @ reconciled_base)
 
 
 class OLSReconciler:
@@ -153,4 +155,4 @@ class OLSReconciler:
 
         # For OLS with hierarchical structure, the optimal solution
         # respects bottom-up aggregation (no adjustments to base level)
-        return self._s_mat @ base_forecasts_base
+        return cast(np.ndarray, self._s_mat @ base_forecasts_base)
