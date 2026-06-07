@@ -19,23 +19,26 @@ jobs:
           version: "0.11.x"
           python-version: "3.11"
           enable-cache: true
-          cache-dependency-glob: "Hierarchical Demand Forecasting System/uv.lock"
 
       - name: Install dependencies
-        working-directory: Hierarchical Demand Forecasting System
-        run: uv sync --frozen --group dev
+        run: |
+          cd "Hierarchical Demand Forecasting System"
+          uv sync --frozen --group dev
 
       - name: Ruff lint
-        working-directory: Hierarchical Demand Forecasting System
-        run: uv run ruff check src tests
+        run: |
+          cd "Hierarchical Demand Forecasting System"
+          uv run ruff check src tests
 
       - name: Ruff format check
-        working-directory: Hierarchical Demand Forecasting System
-        run: uv run ruff format --check src tests
+        run: |
+          cd "Hierarchical Demand Forecasting System"
+          uv run ruff format --check src tests
 
       - name: Mypy
-        working-directory: Hierarchical Demand Forecasting System
-        run: uv run mypy src
+        run: |
+          cd "Hierarchical Demand Forecasting System"
+          uv run mypy src
 
   test:
     name: Tests (Python 3.11)
@@ -50,12 +53,13 @@ jobs:
           version: "0.11.x"
           python-version: "3.11"
           enable-cache: true
-          cache-dependency-glob: "Hierarchical Demand Forecasting System/uv.lock"
 
       - name: Install dependencies
-        working-directory: Hierarchical Demand Forecasting System
-        run: uv sync --frozen --group dev
+        run: |
+          cd "Hierarchical Demand Forecasting System"
+          uv sync --frozen --group dev
 
       - name: Run tests
-        working-directory: Hierarchical Demand Forecasting System
-        run: uv run pytest -q --tb=short
+        run: |
+          cd "Hierarchical Demand Forecasting System"
+          uv run pytest -q --tb=short
