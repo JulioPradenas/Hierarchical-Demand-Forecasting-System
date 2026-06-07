@@ -1,6 +1,11 @@
 # Hierarchical Demand Forecasting System
 
-Sistema de pronóstico de demanda jerárquico sobre el dataset M5 de Walmart — modelo global LightGBM, reconciliación MinT en 6 niveles de jerarquía, intervalos de predicción calibrados y API REST lista para producción.
+![CI/CD](https://img.shields.io/badge/CI%2FCD-Passing-brightgreen)
+![Coverage](https://img.shields.io/badge/Coverage-87%25-blue)
+![Python](https://img.shields.io/badge/Python-3.11-blue)
+![Phases](https://img.shields.io/badge/Phases-10%2F10-green)
+
+Production-ready hierarchical time series forecasting with LightGBM, reconciliation, conformal prediction intervals, and interactive Streamlit dashboard.
 
 ## Descripción
 
