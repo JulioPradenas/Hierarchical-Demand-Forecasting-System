@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import cast
 
 import numpy as np
 import pandas as pd
@@ -87,11 +88,11 @@ def safety_stock(
     # Z-score for service level (one-tailed)
     z_score = norm.ppf(service_level)
     ss = z_score * forecast_std * np.sqrt(lead_time)
-    return np.maximum(ss, 0.0)  # Non-negative
+    return cast(np.ndarray, np.maximum(ss, 0.0))
 
 
 def cost_comparison(
-    y_true: pd.DataFrame,
+    y_true: pd.DataFrame | pd.Series,
     forecasts: dict[str, np.ndarray],
     cost_over: float = 1.0,
     cost_under: float = 5.0,
@@ -107,7 +108,12 @@ def cost_comparison(
     Returns:
         DataFrame with cost metrics per method.
     """
-    y_vals = y_true.values if isinstance(y_true, pd.Series) else y_true
+    if isinstance(y_true, pd.Series):
+        y_vals = np.asarray(y_true.values)
+    elif isinstance(y_true, pd.DataFrame):
+        y_vals = np.asarray(y_true.iloc[:, 0].values)
+    else:
+        y_vals = np.asarray(y_true)
 
     results = []
     baseline_cost = None
@@ -158,4 +164,4 @@ def optimal_order_point(
     """
     expected_lead_time_demand = forecast * lead_time
     ss = safety_stock(forecast, forecast_std, service_level, lead_time)
-    return expected_lead_time_demand + ss
+    return cast(np.ndarray, expected_lead_time_demand + ss)
