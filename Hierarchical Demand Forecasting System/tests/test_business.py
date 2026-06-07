@@ -59,7 +59,6 @@ def test_asymmetric_cost_mixed() -> None:
 def test_asymmetric_cost_asymmetry_ratio() -> None:
     """Same error magnitude but different costs."""
     y_true = np.array([1.0, 1.0])
-    y_pred = np.array([2.0, 0.0])  # Same error magnitude, opposite directions
 
     metrics_over = asymmetric_cost(y_true, np.array([2.0, 1.0]))
     metrics_under = asymmetric_cost(y_true, np.array([1.0, 0.0]))
