@@ -4,6 +4,7 @@ import pytest
 
 from demand_forecast.models.base import BaseForecaster
 from demand_forecast.models.naive import SeasonalNaiveForecaster
+from demand_forecast.models.statistical import AutoARIMAForecaster, ETSForecaster
 
 
 def test_base_forecaster_is_abstract() -> None:
@@ -48,3 +49,42 @@ def test_seasonal_naive_weekly_pattern() -> None:
         preds[preds["unique_id"] == "series_0"].sort_values("ds")["y_pred"].values
     )
     np.testing.assert_array_equal(pred_vals, last_7)
+
+
+def _make_statsforecast_df(n_days: int = 60, n_series: int = 2) -> pd.DataFrame:
+    """Returns DataFrame in statsforecast format: unique_id, ds, y."""
+    import numpy as np
+
+    rng = np.random.default_rng(1)
+    dates = pd.date_range("2020-01-01", periods=n_days, freq="D")
+    records = []
+    for i in range(n_series):
+        uid = f"item_{i}"
+        y = rng.poisson(lam=5, size=n_days).astype(float)
+        for d, v in zip(dates, y):
+            records.append({"unique_id": uid, "ds": d, "y": v})
+    return pd.DataFrame(records)
+
+
+def test_ets_output_shape() -> None:
+    df = _make_statsforecast_df(n_days=60, n_series=2)
+    model = ETSForecaster()
+    result = model.fit(df).predict(horizon=7)
+    assert set(result.columns) >= {"unique_id", "ds", "y_pred"}
+    assert len(result) == 2 * 7
+
+
+def test_ets_predictions_are_positive() -> None:
+    """ETS on count data should produce non-negative forecasts."""
+    df = _make_statsforecast_df(n_days=60, n_series=3)
+    model = ETSForecaster()
+    result = model.fit(df).predict(horizon=7)
+    assert (result["y_pred"] >= 0).all()
+
+
+def test_autoarima_output_shape() -> None:
+    df = _make_statsforecast_df(n_days=60, n_series=2)
+    model = AutoARIMAForecaster()
+    result = model.fit(df).predict(horizon=7)
+    assert set(result.columns) >= {"unique_id", "ds", "y_pred"}
+    assert len(result) == 2 * 7
