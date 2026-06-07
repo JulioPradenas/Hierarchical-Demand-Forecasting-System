@@ -841,7 +841,7 @@ wheels = [
 [[package]]
 name = "demand-forecast"
 version = "0.1.0"
-source = { virtual = "." }
+source = { editable = "." }
 dependencies = [
     { name = "duckdb" },
     { name = "fastapi" },

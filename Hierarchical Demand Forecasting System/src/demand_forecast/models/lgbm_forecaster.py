@@ -185,7 +185,7 @@ class LGBMGlobalForecaster:
         future_df: pd.DataFrame,
     ) -> pd.DataFrame:
         """Iterative prediction for pipelines with lags < horizon."""
-        assert self._model is not None
+        assert self._model is not None  # pragma: no cover
         target = self._target_col
         preds_by_uid: dict[str, dict[pd.Timestamp, float]] = {}
 
