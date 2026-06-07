@@ -178,15 +178,9 @@ def test_metrics_by_level() -> None:
     metrics_df = pd.DataFrame(metrics_data)
 
     # Verify metrics decrease as hierarchy goes up
-    assert metrics_df["count"].values == sorted(
-        metrics_df["count"].values, reverse=True
-    )
-    assert metrics_df["avg_wrmsse"].values == sorted(
-        metrics_df["avg_wrmsse"].values, reverse=True
-    )
-    assert metrics_df["avg_coherence_error"].values == sorted(
-        metrics_df["avg_coherence_error"].values, reverse=True
-    )
+    assert (metrics_df["count"].values == sorted(metrics_df["count"].values, reverse=True)).all()  # noqa: E501
+    assert (metrics_df["avg_wrmsse"].values == sorted(metrics_df["avg_wrmsse"].values, reverse=True)).all()  # noqa: E501
+    assert (metrics_df["avg_coherence_error"].values == sorted(metrics_df["avg_coherence_error"].values, reverse=True)).all()  # noqa: E501
 
 
 def test_dashboard_cache_data() -> None:
