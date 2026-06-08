@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import html
 import numpy as np
 import pandas as pd
 import streamlit as st
@@ -83,41 +84,70 @@ def load_demo_data() -> tuple[pd.DataFrame, pd.DataFrame]:
 
 def render_gradient_header(title: str, subtitle: str) -> None:
     """Render a gradient header with title and subtitle."""
-    html = f"""
+    safe_title = html.escape(title)
+    safe_subtitle = html.escape(subtitle)
+    primary_start = COLORS['primary_start']
+    primary_end = COLORS['primary_end']
+    html_content = f"""
     <div style="
-        background: linear-gradient(135deg, {COLORS['primary_start']} 0%, {COLORS['primary_end']} 100%);
+        background: linear-gradient(135deg, {primary_start} 0%, {primary_end} 100%);
         color: white;
         padding: 30px;
         border-radius: 8px;
         margin-bottom: 20px;
     ">
-        <h1 style="font-size: 28px; font-weight: bold; margin: 0 0 10px 0;">{title}</h1>
-        <p style="font-size: 16px; margin: 0;">{subtitle}</p>
+        <h1 style="
+            font-size: 28px;
+            font-weight: bold;
+            margin: 0 0 10px 0;
+        ">{safe_title}</h1>
+        <p style="font-size: 16px; margin: 0;">{safe_subtitle}</p>
     </div>
     """
-    st.markdown(html, unsafe_allow_html=True)
+    st.markdown(html_content, unsafe_allow_html=True)
 
 
 def render_kpi_card(label: str, value: str, delta: str | None, accent_color: str) -> None:
     """Render a KPI card with accent bar and optional delta."""
     color = COLORS.get(accent_color, COLORS["primary_start"])
-    delta_html = f"<span style='font-size: 12px; color: {color};'>{delta}</span>" if delta else ""
+    safe_label = html.escape(label)
+    safe_value = html.escape(value)
+    safe_delta = html.escape(delta) if delta else ""
+    delta_html = (
+        f"<span style='font-size: 12px; color: {color};'>{safe_delta}</span>"
+        if delta
+        else ""
+    )
 
-    html = f"""
+    bg_light = COLORS['bg_light']
+    border_color = COLORS['border']
+    text_secondary = COLORS['text_secondary']
+    html_content = f"""
     <div style="
         border-left: 4px solid {color};
-        background: {COLORS['bg_light']};
-        border: 1px solid {COLORS['border']};
+        border-right: 1px solid {border_color};
+        border-top: 1px solid {border_color};
+        border-bottom: 1px solid {border_color};
+        background: {bg_light};
         border-radius: 4px;
         padding: 16px;
         box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
     ">
-        <p style="font-size: 12px; color: {COLORS['text_secondary']}; margin: 0 0 8px 0;">{label}</p>
-        <p style="font-size: 20px; font-weight: bold; color: {color}; margin: 0 0 4px 0;">{value}</p>
+        <p style="
+            font-size: 12px;
+            color: {text_secondary};
+            margin: 0 0 8px 0;
+        ">{safe_label}</p>
+        <p style="
+            font-size: 20px;
+            font-weight: bold;
+            color: {color};
+            margin: 0 0 4px 0;
+        ">{safe_value}</p>
         {delta_html}
     </div>
     """
-    st.markdown(html, unsafe_allow_html=True)
+    st.markdown(html_content, unsafe_allow_html=True)
 
 
 def render_kpi_grid(kpis: list[tuple[str, str, str | None, str]]) -> None:
@@ -130,11 +160,18 @@ def render_kpi_grid(kpis: list[tuple[str, str, str | None, str]]) -> None:
 
 def render_tech_stack_badges(technologies: list[str]) -> None:
     """Render technology badges with gradient background."""
+    primary_start = COLORS['primary_start']
+    primary_end = COLORS['primary_end']
     badges_html = ""
     for tech in technologies:
+        safe_tech = html.escape(tech)
         badges_html += f"""
         <span style="
-            background: linear-gradient(135deg, {COLORS['primary_start']} 0%, {COLORS['primary_end']} 100%);
+            background: linear-gradient(
+                135deg,
+                {primary_start} 0%,
+                {primary_end} 100%
+            );
             color: white;
             padding: 6px 12px;
             border-radius: 6px;
@@ -143,12 +180,12 @@ def render_tech_stack_badges(technologies: list[str]) -> None:
             display: inline-block;
             margin-right: 8px;
             margin-bottom: 8px;
-        ">{tech}</span>
+        ">{safe_tech}</span>
         """
 
-    html = f"""
+    html_content = f"""
     <div style="display: flex; flex-wrap: wrap; gap: 8px;">
         {badges_html}
     </div>
     """
-    st.markdown(html, unsafe_allow_html=True)
+    st.markdown(html_content, unsafe_allow_html=True)
