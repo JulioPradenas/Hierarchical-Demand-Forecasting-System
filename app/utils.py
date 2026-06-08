@@ -10,11 +10,16 @@ from app.config import COLORS, DEMO_PRODUCTS, DEMO_STORES
 
 @st.cache_data
 def load_demo_data() -> tuple[pd.DataFrame, pd.DataFrame]:
-    """Load demo forecast and hierarchy data with 100 days historical + 28 days future."""
+    """Load demo forecast and hierarchy data.
+
+    100 days historical + 28 days future.
+    """
     rng = np.random.default_rng(42)
 
     # Generate dates: 100 days historical + 28 days future
-    historical_dates = pd.date_range(end=pd.Timestamp("2024-12-31"), periods=100, freq="D")
+    historical_dates = pd.date_range(
+        end=pd.Timestamp("2024-12-31"), periods=100, freq="D"
+    )
     future_dates = pd.date_range(start=pd.Timestamp("2025-01-01"), periods=28, freq="D")
     all_dates = historical_dates.append(future_dates)
 
@@ -107,7 +112,12 @@ def render_gradient_header(title: str, subtitle: str) -> None:
     st.markdown(html_content, unsafe_allow_html=True)
 
 
-def render_kpi_card(label: str, value: str, delta: str | None, accent_color: str) -> None:
+def render_kpi_card(
+    label: str,
+    value: str,
+    delta: str | None,
+    accent_color: str,
+) -> None:
     """Render a KPI card with accent bar and optional delta."""
     color = COLORS.get(accent_color, COLORS["primary_start"])
     safe_label = html.escape(label)
