@@ -5,6 +5,8 @@ Comparación de modelos, feature importance, predictor interactivo.
 
 from __future__ import annotations
 
+import html
+
 import pandas as pd
 import plotly.express as px
 import streamlit as st
@@ -107,7 +109,10 @@ upper_95 = base_forecast * 1.3
 col1, col2 = st.columns([2, 1])
 
 with col1:
-    html = f"""
+    safe_product = html.escape(selected_product)
+    safe_store = html.escape(selected_store)
+
+    html_output = f"""
     <div style="
         background: linear-gradient(135deg, {COLORS['primary_start']} 0%, {COLORS['primary_end']} 100%);
         color: white;
@@ -116,7 +121,7 @@ with col1:
         text-align: center;
     ">
         <div style="font-size: 14px; opacity: 0.9; margin-bottom: 10px;">
-            Predicción para <strong>{selected_product}</strong> @ <strong>{selected_store}</strong>
+            Predicción para <strong>{safe_product}</strong> @ <strong>{safe_store}</strong>
         </div>
         <div style="font-size: 48px; font-weight: bold; margin-bottom: 10px;">
             {base_forecast:.0f}
@@ -127,7 +132,7 @@ with col1:
         </div>
     </div>
     """
-    st.markdown(html, unsafe_allow_html=True)
+    st.markdown(html_output, unsafe_allow_html=True)
 
 with col2:
     st.metric("Confianza 80%", f"{((upper_80 - lower_80) / base_forecast * 100):.0f}%")
