@@ -1,327 +1,327 @@
-# Hierarchical Demand Forecasting System
+# Sistema de Pronóstico Jerárquico de Demanda
 
 [![CI](https://github.com/JulioPradenas/Hierarchical-Demand-Forecasting-System/actions/workflows/ci.yml/badge.svg)](https://github.com/JulioPradenas/Hierarchical-Demand-Forecasting-System/actions/workflows/ci.yml)
-![Coverage](https://img.shields.io/badge/Coverage-87%25-blue)
+![Cobertura](https://img.shields.io/badge/Cobertura-87%25-blue)
 ![Python](https://img.shields.io/badge/Python-3.11-blue)
-![Status](https://img.shields.io/badge/Status-Production%20Ready-green)
+![Estado](https://img.shields.io/badge/Estado-Producci%C3%B3n%20Listo-green)
 
-**Live Dashboard:** [hierarchical-demand-forecasting-system.streamlit.app](https://hierarchical-demand-forecasting-system.streamlit.app)
-
----
-
-## 🎯 Executive Summary
-
-A **production-ready hierarchical time series forecasting system** that reconciles demand predictions across 6 organizational levels (Total → State → Store → Category → Department → Item-Store) using LightGBM, MinT reconciliation, and conformal prediction intervals.
-
-**The Problem:** In retail, forecasts are needed at multiple aggregation levels simultaneously. Independent forecasts create **incoherence** — the sum of store-level forecasts doesn't match the region total. This breaks inventory planning and causes $millions in excess stock or stockouts.
-
-**The Solution:** MinT (Minimum Trace) reconciliation guarantees mathematical coherence across the hierarchy while preserving forecast accuracy at the most important levels.
+**Dashboard en Vivo:** [hierarchical-demand-forecasting-system.streamlit.app](https://hierarchical-demand-forecasting-system.streamlit.app)
 
 ---
 
-## 📊 Key Results
+## 🎯 Resumen Ejecutivo
 
-| Metric | Baseline | Model | Improvement |
-|--------|----------|-------|-------------|
+Un **sistema de pronóstico jerárquico de series temporales listo para producción** que reconcilia predicciones de demanda a través de 6 niveles organizacionales (Total → Estado → Tienda → Categoría → Departamento → Ítem-Tienda) usando LightGBM, reconciliación MinT e intervalos de predicción conformal.
+
+**El Problema:** En retail, los pronósticos se necesitan a múltiples niveles de agregación simultáneamente. Pronósticos independientes generan **incoherencia** — la suma de pronósticos a nivel tienda no coincide con el total regional. Esto rompe la planificación de inventario y causa millones en exceso de stock o desabastecimiento.
+
+**La Solución:** Reconciliación MinT (Minimum Trace) garantiza coherencia matemática en la jerarquía mientras preserva precisión en los niveles más críticos.
+
+---
+
+## 📊 Resultados Clave
+
+| Métrica | Baseline | Modelo | Mejora |
+|---------|----------|--------|--------|
 | **MASE** | 1.044 | 0.889 | ↓14.8% |
 | **RMSSE** | 0.95 | 0.78 | ↓17.9% |
-| **Coherence Error** | 0.0150 | 0.0020 | ↓86.7% |
-| **Training Time** | - | 8.5 min | Scalable to 3,049 SKUs |
+| **Error de Coherencia** | 0.0150 | 0.0020 | ↓86.7% |
+| **Tiempo de Entrenamiento** | - | 8.5 min | Escalable a 3,049 SKUs |
 
-**Why this matters:**
-- 15% MASE improvement = fewer emergency orders + reduced markdown losses
-- 87% better coherence = trustworthy SKU-level plans that sum correctly
-- **6 levels forecasted coherently** = CFO, supply chain, and warehouse all aligned
+**Por qué importa:**
+- 15% mejora en MASE = menos órdenes de emergencia + reducción de pérdidas por markdown
+- 87% mejor coherencia = planes a nivel SKU confiables que suman correctamente
+- **6 niveles pronosticados coherentemente** = CFO, supply chain y bodega alineados
 
 ---
 
-## 🏗️ Architecture
+## 🏗️ Arquitectura
 
 ```
-M5 Dataset (3,049 SKUs × 10 Stores × 1,913 days)
+Dataset M5 (3,049 SKUs × 10 Tiendas × 1,913 días)
     ↓
-[DuckDB] Feature Engineering
-    ├─ Temporal: lags [7,14,28,35...365], rolling means, Fourier terms
-    ├─ Calendar: 22 M5 events + day-of-week encoding
-    └─ Hierarchical: bottom-up aggregations (sum constraints)
+[DuckDB] Ingeniería de Features
+    ├─ Temporales: rezagos [7,14,28,35...365], medias móviles, términos Fourier
+    ├─ Calendario: 22 eventos M5 + codificación día-de-semana
+    └─ Jerárquicas: agregaciones bottom-up (restricciones suma)
     ↓
-[LightGBM Global Model] 50+ features
-    ├─ Single model for all 3,049 series
-    ├─ Time-Series CV: 3 expanding windows, horizon=28 days
-    └─ Output: point forecast + 80%/95% prediction intervals
+[Modelo Global LightGBM] 50+ features
+    ├─ Un único modelo para todos los 3,049 series
+    ├─ Validación Cruzada Temporal: 3 ventanas expandibles, horizonte=28 días
+    └─ Salida: pronóstico puntual + intervalos predicción 80%/95%
     ↓
-[MinT Reconciliation]
-    ├─ Shrinkage covariance estimation
-    ├─ Ensures: sum(stores) = region, sum(regions) = total
-    └─ Preserves accuracy while enforcing constraints
+[Reconciliación MinT]
+    ├─ Estimación de covarianza con shrinkage
+    ├─ Garantiza: suma(tiendas) = región, suma(regiones) = total
+    └─ Preserva precisión mientras fuerza restricciones
     ↓
-[Dashboard] Interactive Streamlit App
-    ├─ Live predictor by product-store
-    ├─ Feature importance (SHAP-inspired)
-    └─ Reconciliation method comparison
+[Dashboard] Aplicación Streamlit Interactiva
+    ├─ Predictor en vivo por producto-tienda
+    ├─ Importancia de features (estilo SHAP)
+    └─ Comparación de métodos de reconciliación
 ```
 
-### Why This Approach?
+### ¿Por qué este enfoque?
 
-1. **Global LightGBM** instead of 3,049 separate models
-   - Captures cross-product patterns (e.g., promotion effects)
-   - 10x faster training than individual models
-   - Single hyperparameter set → easier productionization
+1. **LightGBM Global** en lugar de 3,049 modelos separados
+   - Captura patrones cross-producto (ej: efectos de promociones)
+   - 10x más rápido que modelos individuales
+   - Un único set de hiperparámetros → más fácil de productizar
 
-2. **MinT Reconciliation** instead of Bottom-Up/Top-Down
-   - Mathematically optimal (minimizes prediction error variance)
-   - Doesn't lose signal from top-level trends
-   - Industry standard (Hyndman et al., 2019)
+2. **Reconciliación MinT** en lugar de Bottom-Up/Top-Down
+   - Matemáticamente óptima (minimiza varianza del error de predicción)
+   - No pierde señal de tendencias top-level
+   - Estándar de la industria (Hyndman et al., 2019)
 
-3. **Time-Series Cross-Validation** (not random splits)
-   - Respects temporal ordering
-   - Simulates production: train on past, test on future
-
----
-
-## 🎮 Interactive Dashboard
-
-**Live:** [streamlit.app](https://hierarchical-demand-forecasting-system.streamlit.app)
-
-### Pages
-
-1. **📄 Resumen (Summary)**
-   - 4 KPIs: Products, MASE, Improvement, Hierarchy Levels
-   - Tech stack badges
-
-2. **🔍 Análisis (EDA)**
-   - Demand distribution by hierarchy level
-   - Feature correlation matrix
-   - Series counts and volatility by level
-
-3. **🤖 Resultados (Model Results)**
-   - Model comparison table (Baseline vs Candidates vs Winner)
-   - Feature importance chart (top 15 drivers)
-   - **Interactive predictor:** select product + store → get forecast + intervals
-   - Coherence error by reconciliation method
-
-4. **⚙️ Proceso (How I Built This)**
-   - System architecture diagram
-   - 3-week development timeline
-   - Key decisions with rationale
+3. **Validación Cruzada Temporal** (no splits aleatorios)
+   - Respeta el orden temporal
+   - Simula producción: entrenar en pasado, evaluar en futuro
 
 ---
 
-## 💡 Key Insights
+## 🎮 Dashboard Interactivo
 
-### 1. Feature Importance (Top Drivers)
-- **Price** (18%) — most impactful lever for demand planning
-- **Promotion** (15%) — episodic but high-magnitude events
-- **Seasonality** (12%) — annual patterns (holidays, weather)
-- **Trend** (11%) — underlying growth/decline
-- **Competitor Price** (10%) — external market dynamics
+**En Vivo:** [streamlit.app](https://hierarchical-demand-forecasting-system.streamlit.app)
 
-**Business implication:** Price sensitivity is the #1 lever. A 1% price reduction = ~18% demand increase (elasticity captured in model).
+### Páginas
 
-### 2. Hierarchy Structure Matters
-| Level | Series Count | Avg Volatility | Forecasting Difficulty |
-|-------|-------------|-----------------|----------------------|
-| Item-Store | 3,049 | High (18.2) | Hard (noisy) |
-| Department | 30 | Medium (15.6) | Medium |
-| Store | 10 | Low (12.1) | Easier (aggregation smooths) |
-| Total | 1 | Very Low (8.3) | Easiest (law of large numbers) |
+1. **📄 Resumen**
+   - 4 KPIs: Productos, MASE, Mejora, Niveles Jerárquicos
+   - Badges del stack tecnológico
 
-**Insight:** Aggregation reduces noise. A global LightGBM benefits from this structure.
+2. **🔍 Análisis**
+   - Distribución de demanda por nivel jerárquico
+   - Matriz de correlación entre features
+   - Cantidad de series y volatilidad por nivel
 
-### 3. Reconciliation Impact
-- **No reconciliation** → incoherent (sum of parts ≠ total)
-- **Bottom-Up** → coherent but loses signal from top trends
-- **Top-Down** → complex allocation logic, biased toward big stores
-- **MinT** → coherent + statistically optimal ✅
+3. **🤖 Resultados**
+   - Tabla comparativa de modelos (Baseline vs Candidatos vs Ganador)
+   - Gráfico de importancia de features (top 15 impulsores)
+   - **Predictor interactivo:** selecciona producto + tienda → obtén pronóstico + intervalos
+   - Error de coherencia por método de reconciliación
 
-Coherence error dropped from 0.015 → 0.002 with MinT. In dollars: prevents ~$50K monthly discrepancies in inventory targets.
-
-### 4. Training Efficiency
-- **Per-series models (3,049 × training):** 12+ hours
-- **Global LightGBM (1 × training):** 8.5 minutes
-- **Inference (3,049 predictions):** <1 second
-
-Cost savings: ~70% reduction in compute for monthly retrains.
+4. **⚙️ Proceso**
+   - Diagrama de arquitectura del sistema
+   - Timeline de 3 semanas de desarrollo
+   - Decisiones clave con justificación
 
 ---
 
-## 🛠️ Tech Stack
+## 💡 Insights Clave
 
-| Layer | Technology | Why |
-|-------|-----------|-----|
-| **Data Pipeline** | DuckDB + SQL | Column-oriented, fast aggregations, no server overhead |
-| **Feature Eng** | pandas + polars | Familiar, mature, handles time-series lag operations |
-| **Modeling** | LightGBM | Gradient boosting for tabular data, handles temporal patterns |
-| **Reconciliation** | hierarchicalforecast | Industry-standard implementation (Hyndman lab) |
-| **Hyperparameter Tuning** | Optuna | Bayesian optimization, efficient pruning |
-| **Explainability** | SHAP (local) | Feature importance per prediction |
-| **Experiment Tracking** | MLflow | Reproducibility, model versioning |
-| **Dashboard** | Streamlit | Fast iteration, no frontend code needed |
-| **API** | FastAPI | Fast, async-ready, auto-generated docs |
-| **Testing** | pytest (87% coverage) | Confidence in data & model behavior |
-| **DevOps** | GitHub Actions + Docker | CI/CD automation |
+### 1. Importancia de Features (Principales Impulsores)
+- **Precio** (18%) — palanca más impactante para planificación de demanda
+- **Promoción** (15%) — eventos episódicos pero alto-magnitud
+- **Estacionalidad** (12%) — patrones anuales (vacaciones, clima)
+- **Tendencia** (11%) — crecimiento/declive subyacente
+- **Precio Competencia** (10%) — dinámicas externas del mercado
+
+**Implicación de negocio:** Sensibilidad al precio es el #1 palanca. Una reducción de precio del 1% = ~18% aumento en demanda (elasticidad capturada en modelo).
+
+### 2. La Estructura Jerárquica Importa
+| Nivel | Cantidad Series | Volatilidad Promedio | Dificultad Pronóstico |
+|-------|-----------------|----------------------|----------------------|
+| Ítem-Tienda | 3,049 | Alta (18.2) | Difícil (ruidosa) |
+| Departamento | 30 | Media (15.6) | Media |
+| Tienda | 10 | Baja (12.1) | Más fácil (agregación suaviza) |
+| Total | 1 | Muy Baja (8.3) | Más fácil (ley de grandes números) |
+
+**Insight:** La agregación reduce ruido. Un LightGBM global se beneficia de esta estructura.
+
+### 3. Impacto de Reconciliación
+- **Sin reconciliación** → incoherente (suma de partes ≠ total)
+- **Bottom-Up** → coherente pero pierde señal de tendencias top
+- **Top-Down** → lógica de asignación compleja, sesgada hacia tiendas grandes
+- **MinT** → coherente + estadísticamente óptima ✅
+
+Error de coherencia bajó de 0.015 → 0.002 con MinT. En dólares: previene ~$50K discrepancias mensuales en objetivos de inventario.
+
+### 4. Eficiencia de Entrenamiento
+- **Modelos por-serie (3,049 × entrenamiento):** 12+ horas
+- **LightGBM Global (1 × entrenamiento):** 8.5 minutos
+- **Inferencia (3,049 predicciones):** <1 segundo
+
+Ahorro de costos: ~70% reducción en compute para reentrenamientos mensuales.
 
 ---
 
-## 📈 Performance by Hierarchy Level
+## 🛠️ Stack Tecnológico
+
+| Capa | Tecnología | Por qué |
+|------|-----------|---------|
+| **Pipeline de Datos** | DuckDB + SQL | Orientado a columnas, agregaciones rápidas, sin overhead de servidor |
+| **Feature Engineering** | pandas + polars | Familiar, maduro, maneja operaciones lag de series temporales |
+| **Modelado** | LightGBM | Gradient boosting para datos tabulares, captura patrones temporales |
+| **Reconciliación** | hierarchicalforecast | Implementación estándar de la industria (lab Hyndman) |
+| **Tuning Hiperparámetros** | Optuna | Optimización Bayesiana, poda eficiente |
+| **Interpretabilidad** | SHAP (local) | Importancia de features por predicción |
+| **Tracking de Experimentos** | MLflow | Reproducibilidad, versionado de modelos |
+| **Dashboard** | Streamlit | Iteración rápida, sin código frontend |
+| **API** | FastAPI | Rápida, async-ready, docs auto-generados |
+| **Testing** | pytest (87% cobertura) | Confianza en datos y comportamiento del modelo |
+| **DevOps** | GitHub Actions + Docker | Automatización CI/CD |
+
+---
+
+## 📈 Desempeño por Nivel Jerárquico
 
 ```
-MASE by Level (Lower = Better)
+MASE por Nivel (Menor = Mejor)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Item-Store (base):    0.92  ████████░░ (hardest, noisiest)
-Department:           0.75  ██████░░░░ 
-Store:                0.45  ████░░░░░░
-State:                0.23  ██░░░░░░░░
-Total National:       0.15  █░░░░░░░░░ (easiest, aggregation smooths)
+Ítem-Tienda:      0.92  ████████░░ (más difícil, más ruidosa)
+Departamento:     0.75  ██████░░░░ 
+Tienda:           0.45  ████░░░░░░
+Estado:           0.23  ██░░░░░░░░
+Total Nacional:   0.15  █░░░░░░░░░ (más fácil, agregación suaviza)
 
-Coherence Error (Lower = Better)
+Error de Coherencia (Menor = Mejor)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Bottom-Up:   0.10  ██████████ (breaks top-level accuracy)
-Top-Down:    0.05  █████░░░░░
-MinT:        0.02  ██░░░░░░░░ ✓ (best)
+Bottom-Up:    0.10  ██████████ (rompe precisión top-level)
+Top-Down:     0.05  █████░░░░░
+MinT:         0.02  ██░░░░░░░░ ✓ (mejor)
 ```
 
 ---
 
-## 🚀 Getting Started
+## 🚀 Comenzar
 
-### Option 1: Use the Live Dashboard (No Installation)
+### Opción 1: Usar el Dashboard en Vivo (Sin instalación)
 ```
-Open: https://hierarchical-demand-forecasting-system.streamlit.app
+Abre: https://hierarchical-demand-forecasting-system.streamlit.app
 ↓
-Explore forecasts, feature importance, reconciliation methods
+Explora pronósticos, importancia de features, métodos de reconciliación
 ```
 
-### Option 2: Run Locally
+### Opción 2: Ejecutar Localmente
 
 ```bash
-# Clone repository
+# Clonar repositorio
 git clone https://github.com/JulioPradenas/Hierarchical-Demand-Forecasting-System.git
 cd Hierarchical-Demand-Forecasting-System
 
-# Install dependencies (Python 3.11+)
+# Instalar dependencias (Python 3.11+)
 pip install -r requirements.txt
 
-# Run Streamlit app
+# Ejecutar aplicación Streamlit
 streamlit run app/streamlit_app.py
 
-# Open browser → http://localhost:8501
+# Abre navegador → http://localhost:8501
 ```
 
-### Option 3: Reproduce Full ML Pipeline
+### Opción 3: Reproducir Pipeline ML Completo
 
 ```bash
-# Install dev dependencies
+# Instalar dependencias de desarrollo
 pip install -e ".[dev]"
 
-# Download M5 dataset (requires Kaggle API credentials)
-export KAGGLE_USERNAME=your_username
-export KAGGLE_KEY=your_api_key
+# Descargar dataset M5 (requiere credenciales API Kaggle)
+export KAGGLE_USERNAME=tu_usuario
+export KAGGLE_KEY=tu_api_key
 
-# Run tests
+# Ejecutar tests
 pytest tests/ -v --cov=src --cov-report=html
 
-# Train models (not included in live demo, compute-intensive)
-# See src/demand_forecast/pipelines/ for training scripts
+# Entrenar modelos (no incluido en demo en vivo, compute-intensivo)
+# Ver src/demand_forecast/pipelines/ para scripts de entrenamiento
 ```
 
 ---
 
-## 📁 Project Structure
+## 📁 Estructura del Proyecto
 
 ```
 Hierarchical-Demand-Forecasting-System/
 ├── app/
-│   ├── streamlit_app.py           # Main entry point
-│   ├── pages/                     # Multi-page app
-│   │   ├── 1_🏠_Resumen.py        # Summary page
-│   │   ├── 2_🔍_Analisis.py       # EDA page
-│   │   ├── 3_🤖_Resultados.py     # Results page
-│   │   └── 4_⚙️_Proceso.py        # Architecture page
-│   ├── config.py                  # Global colors, constants
-│   ├── utils.py                   # Helper functions
-│   └── data/                      # Demo data (pre-computed)
+│   ├── streamlit_app.py           # Punto de entrada principal
+│   ├── pages/                     # App multi-página
+│   │   ├── 1_🏠_Resumen.py        # Página de resumen
+│   │   ├── 2_🔍_Analisis.py       # Página de EDA
+│   │   ├── 3_🤖_Resultados.py     # Página de resultados
+│   │   └── 4_⚙️_Proceso.py        # Página de arquitectura
+│   ├── config.py                  # Colores globales, constantes
+│   ├── utils.py                   # Funciones auxiliares
+│   └── data/                      # Datos demo (pre-computados)
 │
-├── src/demand_forecast/           # ML pipeline (for reproducibility)
-│   ├── data/                      # M5DataLoader, hierarchy matrix
-│   ├── features/                  # Temporal, calendar, hierarchical features
+├── src/demand_forecast/           # Pipeline ML (para reproducibilidad)
+│   ├── data/                      # M5DataLoader, matriz de jerarquía
+│   ├── features/                  # Features temporales, calendario, jerárquicos
 │   ├── models/                    # LightGBM, baselines, ensemble
 │   ├── reconciliation/            # MinT, Bottom-Up, Top-Down, OLS
-│   ├── evaluation/                # WRMSSE, MASE, business metrics
-│   └── pipelines/                 # Training & inference orchestration
+│   ├── evaluation/                # WRMSSE, MASE, métricas de negocio
+│   └── pipelines/                 # Orquestación de entrenamiento e inferencia
 │
-├── tests/                         # Unit + integration tests (87% coverage)
-├── pyproject.toml                 # Project metadata, dependencies
-├── requirements.txt               # Streamlit Cloud compatible versions
-└── README.md                      # This file
+├── tests/                         # Tests unitarios + integración (87% cobertura)
+├── pyproject.toml                 # Metadatos del proyecto, dependencias
+├── requirements.txt               # Versiones compatibles con Streamlit Cloud
+└── README.md                      # Este archivo
 ```
 
 ---
 
-## 🔬 Technical Highlights
+## 🔬 Destacados Técnicos
 
-### 1. Time-Series Cross-Validation (Expanding Window)
+### 1. Validación Cruzada Temporal (Ventana Expandible)
 ```python
-Fold 1: [Train: Days 1-1200]    [Test: Days 1201-1228]
-Fold 2: [Train: Days 1-1400]    [Test: Days 1401-1428]
-Fold 3: [Train: Days 1-1600]    [Test: Days 1601-1628]
-                                      ↓
-                            No data leakage, production-like
+Fold 1: [Entrenamiento: Días 1-1200]     [Test: Días 1201-1228]
+Fold 2: [Entrenamiento: Días 1-1400]     [Test: Días 1401-1428]
+Fold 3: [Entrenamiento: Días 1-1600]     [Test: Días 1601-1628]
+                                                ↓
+                                 Sin fuga de datos, tipo producción
 ```
 
-### 2. Conformal Prediction Intervals
-- **80% confidence interval:** ±~10 units (typical demand ~50)
-- **95% confidence interval:** ±~15 units
-- **Coverage:** >95% of actuals fall within bounds (calibrated empirically)
+### 2. Intervalos de Predicción Conformal
+- **Intervalo de confianza 80%:** ±~10 unidades (demanda típica ~50)
+- **Intervalo de confianza 95%:** ±~15 unidades
+- **Cobertura:** >95% de valores reales caen dentro de los intervalos (calibrado empíricamente)
 
-### 3. MinT Reconciliation Math
+### 3. Matemática de Reconciliación MinT
 ```
-ŷ_reconciled = S @ (S^T S)^(-1) @ S^T ŷ
+ŷ_reconciliado = S @ (S^T S)^(-1) @ S^T ŷ
     ↓
-Where S = constraint matrix (sum-to-parent structure)
-      ŷ = base forecasts from LightGBM
+Donde S = matriz de restricción (estructura suma-a-padre)
+      ŷ = pronósticos base de LightGBM
       
-Result: Coherent, variance-minimizing predictions
+Resultado: Predicciones coherentes, que minimizan varianza
 ```
 
 ---
 
-## 📊 Business Metrics (Simulated)
+## 📊 Métricas de Negocio (Simuladas)
 
-Assuming deployment to 1,000-store retailer:
+Asumiendo deployment a retailer con 1,000 tiendas:
 
-| Metric | Value | Impact |
-|--------|-------|--------|
-| **Forecast Accuracy (MASE)** | 0.89 | 15% better inventory turns |
-| **Coherence Rate** | 99.8% | Trust in supply chain plans |
-| **Computation Cost** | $2.5/month | <$1 per 100 SKUs retraining |
-| **Inference Latency** | 50ms | Real-time pricing/inventory decisions |
-| **Monthly Benefit** | ~$120K | Reduced excess stock + fewer stockouts |
-
----
-
-## 🔮 Next Steps / Future Work
-
-1. **Real-time predictions** → Deploy API with FastAPI + live data ingestion
-2. **Causal inference** → Quantify price elasticity using causal forests
-3. **Probabilistic reconciliation** → Full predictive distribution (not just intervals)
-4. **Promotion modeling** → Dedicated base × multiplier for promo periods
-5. **Multi-step ahead** → 90-day rolling forecasts for strategic planning
-6. **Automated retraining** → MLflow + GitHub Actions scheduled jobs
-7. **A/B test framework** → Compare MinT vs other reconciliation in production
+| Métrica | Valor | Impacto |
+|---------|-------|---------|
+| **Precisión de Pronóstico (MASE)** | 0.89 | 15% mejor rotación de inventario |
+| **Tasa de Coherencia** | 99.8% | Confianza en planes supply chain |
+| **Costo de Computación** | $2.5/mes | <$1 por 100 SKUs reentrenamiento |
+| **Latencia de Inferencia** | 50ms | Decisiones en tiempo real de precios/inventario |
+| **Beneficio Mensual** | ~$120K | Exceso de stock reducido + menos desabastecimientos |
 
 ---
 
-## 📚 References
+## 🔮 Próximos Pasos / Trabajo Futuro
 
-- **MinT Reconciliation:** [Wickramasuriya, Athanasopoulos & Hyndman (2019)](https://robjhyndman.com/papers/mintheir.pdf)
-- **M5 Competition:** [Makridakis, Spiliotis & Assimakopoulos (2020)](https://www.sciencedirect.com/science/article/pii/S0169207021001387)
+1. **Predicciones en tiempo real** → Deploy API con FastAPI + ingesta de datos en vivo
+2. **Inferencia causal** → Cuantificar elasticidad de precio usando bosques causales
+3. **Reconciliación probabilística** → Distribución predictiva completa (no solo intervalos)
+4. **Modelado de promociones** → Dedicado base × multiplicador para períodos promo
+5. **Multiple pasos adelante** → Pronósticos rolling de 90 días para planificación estratégica
+6. **Reentrenamiento automatizado** → MLflow + GitHub Actions trabajos programados
+7. **Marco de A/B test** → Comparar MinT vs otras reconciliaciones en producción
+
+---
+
+## 📚 Referencias
+
+- **Reconciliación MinT:** [Wickramasuriya, Athanasopoulos & Hyndman (2019)](https://robjhyndman.com/papers/mintheir.pdf)
+- **Competencia M5:** [Makridakis, Spiliotis & Assimakopoulos (2020)](https://www.sciencedirect.com/science/article/pii/S0169207021001387)
 - **LightGBM:** [Ke et al. (2017)](https://papers.nips.cc/paper/6907-lightgbm-a-fast-distributed-gradient-boosting-framework)
-- **Time Series CV:** [Hyndman & Athanasopoulos (2021) - Forecasting textbook](https://otexts.com/fpp3/)
+- **Series Temporales CV:** [Hyndman & Athanasopoulos (2021) - Libro de Forecasting](https://otexts.com/fpp3/)
 
 ---
 
-## 👤 Author
+## 👤 Autor
 
 **Julio Pradenas** — Data Scientist
 - GitHub: [@JulioPradenas](https://github.com/JulioPradenas)
@@ -329,15 +329,15 @@ Assuming deployment to 1,000-store retailer:
 
 ---
 
-## 📄 License
+## 📄 Licencia
 
-MIT License — Feel free to use for learning or commercial purposes.
+MIT License — Siéntete libre de usar para propósitos de aprendizaje o comerciales.
 
 ---
 
-## 🤝 Contributing
+## 🤝 Contribuir
 
-Feedback, issues, and PRs welcome! This is a portfolio project, so suggestions for improvement are appreciated.
+¡Feedback, issues y PRs bienvenidos! Este es un proyecto de portafolio, así que las sugerencias de mejora son apreciadas.
 
-**Last updated:** June 2026
-**Status:** Production Ready ✅
+**Última actualización:** Junio 2026
+**Estado:** Listo para Producción ✅
