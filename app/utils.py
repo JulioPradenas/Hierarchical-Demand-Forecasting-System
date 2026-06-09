@@ -21,7 +21,7 @@ def load_demo_data() -> tuple[pd.DataFrame, pd.DataFrame]:
         end=pd.Timestamp("2024-12-31"), periods=100, freq="D"
     )
     future_dates = pd.date_range(start=pd.Timestamp("2025-01-01"), periods=28, freq="D")
-    all_dates = historical_dates.append(future_dates)
+    all_dates = historical_dates.union(future_dates)
 
     # Create combinations of products and stores
     products = DEMO_PRODUCTS
@@ -170,32 +170,5 @@ def render_kpi_grid(kpis: list[tuple[str, str, str | None, str]]) -> None:
 
 def render_tech_stack_badges(technologies: list[str]) -> None:
     """Render technology badges with gradient background."""
-    primary_start = COLORS['primary_start']
-    primary_end = COLORS['primary_end']
-    badges_html = ""
     for tech in technologies:
-        safe_tech = html.escape(tech)
-        badges_html += f"""
-        <span style="
-            background: linear-gradient(
-                135deg,
-                {primary_start} 0%,
-                {primary_end} 100%
-            );
-            color: white;
-            padding: 6px 12px;
-            border-radius: 6px;
-            font-size: 12px;
-            font-weight: 500;
-            display: inline-block;
-            margin-right: 8px;
-            margin-bottom: 8px;
-        ">{safe_tech}</span>
-        """
-
-    html_content = f"""
-    <div style="display: flex; flex-wrap: wrap; gap: 8px;">
-        {badges_html}
-    </div>
-    """
-    st.markdown(html_content, unsafe_allow_html=True)
+        st.write(f"🏷️ {tech}", unsafe_allow_html=False)

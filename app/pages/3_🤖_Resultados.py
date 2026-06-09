@@ -5,10 +5,16 @@ Comparación de modelos, feature importance, predictor interactivo.
 
 from __future__ import annotations
 
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+
 import html
 
 import pandas as pd
 import plotly.express as px
+import plotly.graph_objects as go
 import streamlit as st
 from app.config import COLORS, DEMO_FEATURES, DEMO_PRODUCTS, DEMO_STORES
 from app.utils import load_demo_data, render_gradient_header
@@ -59,22 +65,23 @@ st.subheader("🔍 Importancia de Features (Top 15)")
 
 features_df = pd.DataFrame(DEMO_FEATURES, columns=["Feature", "Importancia"])
 
-fig = px.barh(
-    features_df,
-    x="Importancia",
-    y="Feature",
-    orientation="h",
-    color_discrete_sequence=[COLORS["primary_start"]],
-    title="Feature Importance del Modelo Ganador",
+fig = go.Figure(
+    data=go.Bar(
+        y=features_df["Feature"],
+        x=features_df["Importancia"],
+        orientation="h",
+        marker=dict(color=COLORS["primary_start"]),
+    )
 )
 fig.update_layout(
+    title="Feature Importance del Modelo Ganador",
     template="plotly_white",
     height=500,
     showlegend=False,
     xaxis_title="Importancia (ganancia)",
     yaxis_title="",
+    margin=dict(l=150),
 )
-fig.update_xaxes(automargin=True)
 
 st.plotly_chart(fig, use_container_width=True)
 
@@ -135,8 +142,10 @@ with col1:
     st.markdown(html_output, unsafe_allow_html=True)
 
 with col2:
-    st.metric("Confianza 80%", f"{((upper_80 - lower_80) / base_forecast * 100):.0f}%")
-    st.metric("Confianza 95%", f"{((upper_95 - lower_95) / base_forecast * 100):.0f}%")
+    confidence_80 = ((upper_80 - lower_80) / base_forecast * 100) if base_forecast > 0 else 0
+    confidence_95 = ((upper_95 - lower_95) / base_forecast * 100) if base_forecast > 0 else 0
+    st.metric("Confianza 80%", f"{confidence_80:.0f}%")
+    st.metric("Confianza 95%", f"{confidence_95:.0f}%")
 
 st.divider()
 

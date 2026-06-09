@@ -5,6 +5,11 @@ Arquitectura, timeline de desarrollo, decisiones clave.
 
 from __future__ import annotations
 
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+
 import streamlit as st
 from app.config import COLORS, GITHUB_REPO
 from app.utils import render_gradient_header
@@ -157,12 +162,10 @@ st.subheader("🔗 Links y Recursos")
 col1, col2, col3 = st.columns(3)
 
 with col1:
-    if st.link_button("📂 Código en GitHub", GITHUB_REPO):
-        pass
+    st.markdown(f"[📂 Código en GitHub]({GITHUB_REPO})")
 
 with col2:
-    if st.link_button("📖 README & Docs", f"{GITHUB_REPO}/blob/main/README.md"):
-        pass
+    st.markdown(f"[📖 README & Docs]({GITHUB_REPO}/blob/main/README.md)")
 
 with col3:
     st.markdown(

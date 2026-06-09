@@ -1,3 +1,8 @@
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+
 import streamlit as st
 
 from app.config import GITHUB_REPO
@@ -15,35 +20,44 @@ st.set_page_config(
 )
 
 # Render gradient header
-render_gradient_header(
-    title="🏠 Resumen del Proyecto",
-    subtitle="Sistema Jerárquico de Pronóstico de Demanda",
-)
+try:
+    render_gradient_header(
+        title="🏠 Resumen del Proyecto",
+        subtitle="Sistema Jerárquico de Pronóstico de Demanda",
+    )
+except Exception as e:
+    st.error(f"Error en gradient header: {e}")
 
 # Render KPI grid
-kpis = [
-    ("Productos", "3,049", None, "primary_start"),
-    ("MASE", "0.89", None, "success"),
-    ("Mejora vs Baseline", "↓14.5%", None, "error"),
-    ("Niveles Jerárquicos", "6", None, "info"),
-]
-render_kpi_grid(kpis)
+try:
+    kpis = [
+        ("Productos", "3,049", None, "primary_start"),
+        ("MASE", "0.89", None, "success"),
+        ("Mejora vs Baseline", "↓14.5%", None, "error"),
+        ("Niveles Jerárquicos", "6", None, "info"),
+    ]
+    render_kpi_grid(kpis)
+except Exception as e:
+    st.error(f"Error en KPI grid: {e}")
 
 # Divider
 st.divider()
 
 # Tech stack section
-st.subheading("🛠️ Stack Tecnológico")
-render_tech_stack_badges(
-    [
-        "Python",
-        "LightGBM",
-        "MinT Reconciliation",
-        "Streamlit",
-        "Plotly",
-        "DuckDB",
-    ]
-)
+st.subheader("🛠️ Stack Tecnológico")
+try:
+    render_tech_stack_badges(
+        [
+            "Python",
+            "LightGBM",
+            "MinT Reconciliation",
+            "Streamlit",
+            "Plotly",
+            "DuckDB",
+        ]
+    )
+except Exception as e:
+    st.error(f"Error en tech stack: {e}")
 
 # CTA text
 st.markdown(
@@ -57,7 +71,7 @@ st.markdown(
 )
 
 # GitHub link button
-st.link_button("📂 Ver en GitHub", GITHUB_REPO)
+st.markdown(f"[📂 Ver en GitHub]({GITHUB_REPO})")
 
 # Footer
 st.markdown(
